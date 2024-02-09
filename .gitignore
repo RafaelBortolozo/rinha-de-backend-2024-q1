@@ -1,3 +1,5 @@
+node_modules
+
 /resultados/*/
 executar-testes-final.sh
 RESULTADOS.md
