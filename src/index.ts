@@ -1,16 +1,29 @@
-// src/index.js
-import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
+import * as fs from 'fs'
+import * as https from 'https'
+import config from '~/config'
+import { getConnection } from './packages/database'
+import server from './server'
 
-dotenv.config();
+const PORT = config.SERVER_PORT || '3000'
 
-const app: Express = express();
-const port = process.env.PORT;
+async function onStart(): Promise<any> {
+  try {
+    await getConnection()
+  } catch (err) {
+    // tslint:disable-next-line:no-console
+    console.log(err)
+    throw err
+  }
+}
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World");
-});
+const currentServer = https.createServer(
+  {
+    cert: fs.readFileSync(`${__dirname}/../server.cert`, 'utf8'),
+    key: fs.readFileSync(`${__dirname}/../server.key`, 'utf8'),
+  },
+  server,
+)
 
-app.listen(port, () => {
-  console.log(`🚀 Server is running at http://localhost:${port}`);
-});
+currentServer.listen(PORT, onStart)
+// tslint:disable-next-line:no-console
+console.log(`Server up and running on https://localhost:${PORT}`)
